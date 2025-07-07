@@ -1,4 +1,4 @@
-//require('dotenv').config({ path: './backend/.env' }); // تحميل المتغيرات البيئية
+require('dotenv').config(); // تحميل المتغيرات البيئية من ملف .env (المفترض أنه في نفس مجلد api.js)
 
 const express = require('express');
 const cors = require('cors');
@@ -13,15 +13,22 @@ app.use(cors()); // تفعيل CORS للسماح لطلبات الواجهة ا�
 app.use(express.json()); // للسماح بتحليل طلبات JSON (إذا احتجنا لها لاحقًا)
 
 // مسار لملف products.json
-//const productsFilePath = path.join(__dirname, 'products.json');
-const productsFilePath = path.join(process.cwd(), 'products.json');
+// بما أن products.json موجود في نفس مجلد api.js، نستخدم __dirname
+const productsFilePath = path.join(__dirname, 'products.json');
 
 // مفتاح API لسعر الذهب
 const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
-const GOLD_PRICE_API_URL = `https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/USD`; // جلب أحدث أسعار الصرف من USD
+// إضافة تحقق للتأكد من وجود المفتاح قبل بناء الرابط
+const GOLD_PRICE_API_URL = EXCHANGE_RATE_API_KEY
+    ? `https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/USD`
+    : null; // إذا لم يكن المفتاح موجودًا، اجعل الرابط null
 
 // دالة لجلب سعر الذهب (بالنسبة للدولار الأمريكي)
 async function getGoldPrice() {
+    if (!GOLD_PRICE_API_URL) {
+        console.warn('EXCHANGE_RATE_API_KEY is not set or invalid. Using default gold price.');
+        return 60; // قيمة افتراضية إذا لم يكن المفتاح موجودًا
+    }
     try {
         const response = await fetch(GOLD_PRICE_API_URL);
         if (!response.ok) {
@@ -29,41 +36,34 @@ async function getGoldPrice() {
         }
         const data = await response.json();
         
-        // **ملاحظة:** ExchangeRate-API يقدم أسعار صرف العملات. لا يوفر سعر الذهب مباشرة (XAU).
-        // لذا، سنفترض سعر ذهب ثابت لغرض الحساب. في مشروع حقيقي، ستحتاج إلى API خاص بسعر الذهب.
         const assumedGoldPricePerGramUSD = 65; // سعر افتراضي لغرام الذهب بالدولار الأمريكي
 
         return assumedGoldPricePerGramUSD;
 
     } catch (error) {
         console.error('Failed to fetch gold price:', error);
-        // في حالة الفشل، نرجع قيمة افتراضية لمنع توقف التطبيق
         return 60; // قيمة افتراضية في حالة الفشل
     }
 }
 
 // نقطة نهاية API لجلب المنتجات مع الأسعار المحسوبة
+// المسار /api/products هو الذي ستتصل به الواجهة الأمامية المحلية
 app.get('/api/products', async (req, res) => {
     try {
-        // قراءة المنتجات من ملف JSON
         const data = await fs.readFile(productsFilePath, 'utf8');
         let products = JSON.parse(data);
 
-        // جلب سعر الذهب
         const goldPrice = await getGoldPrice();
 
-        // حساب السعر لكل منتج
         const productsWithCalculatedPrices = products.map(product => {
-            // تأكد من وجود popularityScore و weight في بيانات المنتج
-            const popularityScore = product.popularityScore || 0; // افتراضيًا 0 إذا لم يكن موجودًا
-            const weight = product.weight || 1; // افتراضيًا 1 إذا لم يكن موجودًا
+            const popularityScore = product.popularityScore || 0;
+            const weight = product.weight || 1;
 
-            // Price = (popularityScore + 1) * weight * goldPrice
             const calculatedPrice = (popularityScore + 1) * weight * goldPrice;
 
             return {
                 ...product,
-                price: parseFloat(calculatedPrice.toFixed(2)) // تقريب السعر إلى منزلتين عشريتين
+                price: parseFloat(calculatedPrice.toFixed(2))
             };
         });
 
@@ -77,9 +77,11 @@ app.get('/api/products', async (req, res) => {
 
 module.exports = app; // هذا السطر يخبر Vercel بتصدير تطبيق Express كـ Serverless Function
 
-// بدء تشغيل الخادم
-//app.listen(PORT, () => {
-//    console.log(`Backend server running on port ${PORT}`);
-//    console.log(`Access products at: http://localhost:${PORT}/api/products`);
-//});
-
+// --- بدء تشغيل الخادم محليًا ---
+// يجب أن تكون هذه الأسطر غير معلقة لتشغيل السيرفر
+// تذكر أن تعلقها مرة أخرى قبل الرفع إلى Vercel
+app.listen(PORT, () => {
+    console.log(`Backend server running on port ${PORT}`);
+    // لاحظ المسار الكامل هنا (بما فيه /api) ليتطابق مع الواجهة الأمامية
+    console.log(`Access products at: http://localhost:${PORT}/api/products`);
+});
