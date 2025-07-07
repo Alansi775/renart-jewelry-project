@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const productListContainer = document.querySelector('.product-list-container');
-    const BACKEND_API_URL = 'http://localhost:3000/api/products'; // عنوان الـ API الخاص بنا
-
+    //const BACKEND_API_URL = 'http://localhost:3000/api/products'; // عنوان الـ API الخاص بنا
+    const BACKEND_API_URL = 'https://renart-jewelry-project-f8h5o51nh.vercel.app'; // عنوان الـ API الخاص بنا (المنشور على Vercel)
     // دالة لجلب المنتجات من الـ backend
     async function fetchProducts() {
         try {

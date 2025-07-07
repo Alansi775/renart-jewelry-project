@@ -13,7 +13,8 @@ app.use(cors()); // تفعيل CORS للسماح لطلبات الواجهة ا�
 app.use(express.json()); // للسماح بتحليل طلبات JSON (إذا احتجنا لها لاحقًا)
 
 // مسار لملف products.json
-const productsFilePath = path.join(__dirname, 'products.json');
+//const productsFilePath = path.join(__dirname, 'products.json');
+const productsFilePath = path.join(process.cwd(), 'products.json');
 
 // مفتاح API لسعر الذهب
 const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;

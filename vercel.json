@@ -1,14 +1,13 @@
 {
-  "outputDirectory": "backend",
   "functions": {
-    "backend/api.js": {
+    "api.js": {  
       "runtime": "nodejs18.x"
     }
   },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/api.js"
+      "dest": "api.js" 
     }
   ]
 }
