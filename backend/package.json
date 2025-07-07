@@ -1,0 +1,14 @@
+{
+  "name": "backend-api",
+  "version": "1.0.0",
+  "description": "Backend API for Renart Jewelry project",
+  "main": "api.js", 
+  "scripts": {
+    "start": "node api.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^3.3.2"
+  }
+}
