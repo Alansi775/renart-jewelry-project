@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './backend/.env' }); // تحميل المتغيرات البيئية
+//require('dotenv').config({ path: './backend/.env' }); // تحميل المتغيرات البيئية
 
 const express = require('express');
 const cors = require('cors');
@@ -74,8 +74,11 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+module.exports = app; // هذا السطر يخبر Vercel بتصدير تطبيق Express كـ Serverless Function
+
 // بدء تشغيل الخادم
-app.listen(PORT, () => {
-    console.log(`Backend server running on port ${PORT}`);
-    console.log(`Access products at: http://localhost:${PORT}/api/products`);
-});
+//app.listen(PORT, () => {
+//    console.log(`Backend server running on port ${PORT}`);
+//    console.log(`Access products at: http://localhost:${PORT}/api/products`);
+//});
+
